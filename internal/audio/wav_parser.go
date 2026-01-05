@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func ParseWav(path string) error {
+func ParseWav(path string) (WavType, error) {
 	// f, err := os.Open("assets/sample-3s.wav")
 	f, err := os.Open(path)
 	if err != nil {
@@ -34,5 +34,5 @@ func ParseWav(path string) error {
 	}
 	data_info.logDataChunk()
 
-	return nil
+	return WavType{header, data_info}, nil
 }

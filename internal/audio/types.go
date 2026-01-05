@@ -7,7 +7,12 @@ import (
 	"os"
 )
 
-type wavMetadata struct {
+type WavType struct {
+	WavHeader    WavHeader
+	WavDataChunk WavDataChunk
+}
+
+type WavMetadata struct {
 	SampleRate uint32
 	Channels   uint16
 	Bitdepth   uint16
