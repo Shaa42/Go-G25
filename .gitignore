@@ -1,3 +1,4 @@
 assets/
 bin/
+internal/protocol/cmd
 internal/audio/cmd
