@@ -14,4 +14,3 @@ type Message struct {
         Type    MessageType
         Payload []byte
 }
-:
