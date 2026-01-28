@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	wavPath := "assets/sine_8k.wav"
+	wavPath := "assets/sample-3s.wav"
 	addr := "localhost:42069"
 
 	// Construire WavData à partir du fichier WAV
@@ -35,7 +35,10 @@ func main() {
 	defer conn.Close()
 
 	// Chunks chan
-	serverChunks := make(chan audio.WavDataChunk, totalChunks)
+	// serverChunks := make(chan audio.WavDataChunk, totalChunks)
+
+	receivedChunks := make([]audio.WavDataChunk, totalChunks)
+	var mut sync.Mutex
 
 	// Waitgroup
 	var wg sync.WaitGroup
@@ -44,22 +47,27 @@ func main() {
 	enc := gob.NewEncoder(conn)
 	dec := gob.NewDecoder(conn)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		defer close(serverChunks)
-
+	wg.Go(func() {
 		for range totalChunks {
+			// Réception du chunk traité par le serveur
 			var chunk audio.WavDataChunk
 			if err := dec.Decode(&chunk); err != nil {
-				log.Printf("Erreur réception chunk: %v", err)
+				log.Printf("Error receiving chunk: %v", err)
 				break
 			}
-			fmt.Printf("Reçu chunk #%d (%d bytes)\n", chunk.ChunkID, len(chunk.Samples))
-			serverChunks <- chunk
+
+			// Debug
+			fmt.Printf("Received chunk #%d (%d bytes)\n", chunk.ChunkID, len(chunk.Samples))
+
+			// Enregistre dans une liste
+			mut.Lock()
+			if chunk.ChunkID > 0 && chunk.ChunkID <= totalChunks {
+				receivedChunks[chunk.ChunkID-1] = chunk
+			}
+			mut.Unlock()
 		}
-		fmt.Println("Réception terminée")
-	}()
+		fmt.Println("done reception")
+	})
 
 	// Iter through data until EOF
 	for {
@@ -70,21 +78,11 @@ func main() {
 				ChunkID:  wd.ChunkID,
 				Samples:  chunk,
 			}
-			// fmt.Printf("Chunk #%d: %d bytes\n", wd.ChunkID, wdc.Len())
 
 			// Encode Struct to send to server
 			if err := enc.Encode(wdc); err != nil {
 				log.Fatalf("failed to gob-encode WavData chunk %d: %v", wd.ChunkID, err)
 			}
-
-			// Get server ACK message
-			// var ack string
-			// if err := dec.Decode(&ack); err != nil {
-			// 	log.Fatalf("failed to gob-decode ACK for chunk %d: %v", wd.ChunkID, err)
-			// }
-			// fmt.Println("Client: reçu:", ack)
-
-			// fmt.Printf("Client: envoyé %d chunks (%d frames au total) au serveur %s\n", wd.ChunkID, wd.TotalFrames, addr)
 		}
 
 		if eof {
@@ -92,5 +90,21 @@ func main() {
 			break
 		}
 	}
+
 	wg.Wait()
+
+	count := 0
+	for _, c := range receivedChunks {
+		if len(c.Samples) > 0 {
+			count++
+		}
+	}
+
+	if count != totalChunks {
+		log.Printf("chunks received (%d) != chunks sent (%d)\n",
+			count, totalChunks)
+	}
+
+	fmt.Println("Creating new file in", "assets/test.wav")
+	audio.WriteWav("assets/test.wav", receivedChunks)
 }

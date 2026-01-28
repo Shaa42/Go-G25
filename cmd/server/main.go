@@ -18,9 +18,8 @@ func handleConn(conn net.Conn) {
 
 	dec := gob.NewDecoder(conn)
 	enc := gob.NewEncoder(conn)
-
-	// Wait for the client to send over data, process it and wait for the client to close the conn
 	for {
+		// Wait for the client to send over data
 		var wdc audio.WavDataChunk
 		if err := dec.Decode(&wdc); err != nil {
 			if err == io.EOF {
@@ -31,29 +30,21 @@ func handleConn(conn net.Conn) {
 			return
 		}
 
-		// ack := fmt.Sprintf("ACK Chunk %d", wdc.ChunkID)
-		// if err := enc.Encode(ack); err != nil {
-		// 	log.Println("Server: gob encode ACK error:", err)
-		// 	return
-		// }
-
+		// process the data
 		HandleSample(&wdc)
 
+		// Send data back to the client
 		if err := enc.Encode(wdc); err != nil {
 			log.Println("Server: gob encode ACK error:", err)
 			return
 		}
 
-		// log.Printf("Server: processed WavData (Samples=%d, SR=%d, Ch=%d, Bits=%d) -> %q\n",
-		// wdc.Len(), wdc.Metadata.SampleRate, wdc.Metadata.Channels, wdc.Metadata.Bitdepth, ack)
 	}
 }
 
 func HandleSample(wdc *audio.WavDataChunk) {
-	var samplesFloat32 []float32
-	samplesFloat32 = wdc.ConvSampByteToFloat32()
-	samplesFloat32 = processor.AddDB(samplesFloat32, 2.0)
-
+	samplesFloat32 := wdc.ConvSampByteToFloat32()
+	samplesFloat32 = processor.SubDB(samplesFloat32, 16.0)
 	wdc.ConvSampFloat32ToByte(samplesFloat32)
 }
 
@@ -62,6 +53,7 @@ func main() {
 	addr := ":42069"
 	log.Println("Server: listening on", addr)
 
+	// Open tcp socket on localhost:42069
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal("Server: failed to listen:", err)
