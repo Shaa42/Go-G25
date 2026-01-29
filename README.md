@@ -1,4 +1,4 @@
-# ELP-G25 - Audio proccessing client/serveur en Go
+# Go-G25 - Audio proccessing client/serveur en Go
 
 Projet Go - groupe 25 (ELP)
 Ce projet implémente un client TCP qui lit un ficher `.wav`, envoie le fichier à un serveur TCP. Ce serveur applique un traitement audio puis le renvoie au client qui renvoie un nouveau fichier `.wav`.
