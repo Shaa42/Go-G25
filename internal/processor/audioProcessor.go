@@ -4,9 +4,9 @@ import (
 	"math"
 )
 
-// Increase volume
+// AddDB Increase volume
 func AddDB(samples []float32, dB float64) []float32 {
-	// Formule : gain = 10^(dB/20)
+	// Formula : gain = 10^(dB/20)
 	gain := math.Pow(10.0, dB/20.0)
 
 	result := make([]float32, len(samples))
@@ -25,9 +25,9 @@ func AddDB(samples []float32, dB float64) []float32 {
 	return result
 }
 
-// Decrease volume
+// SubDB Decrease volume
 func SubDB(samples []float32, dB float64) []float32 {
-	// Formule : gain = 10^(dB/20)
+	// Formula : gain = 10^(dB/20)
 	gain := math.Pow(10.0, dB/20.0)
 
 	result := make([]float32, len(samples))

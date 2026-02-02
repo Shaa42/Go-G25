@@ -74,7 +74,7 @@ func (wd *WavData) Close() error {
 	return nil
 }
 
-// Return how many samples are left
+// RemainingSamples Return how many samples are left
 func (wd *WavData) RemainingSamples() int {
 	if wd.CursorSamples >= wd.TotalFrames {
 		return 0
@@ -137,7 +137,7 @@ func (wdc *WavDataChunk) ConvSampFloat32ToByte(samples []float32) {
 				sample = -1.0
 			}
 
-			// Convertir [-1.0, 1.0] → [-128, 127] → [0, 255]
+			// Convert [-1.0, 1.0] → [-128, 127] → [0, 255]
 			val := int(sample * 128.0)
 			if val > 127 {
 				val = 127
@@ -158,7 +158,7 @@ func (wdc *WavDataChunk) ConvSampFloat32ToByte(samples []float32) {
 				sample = -1.0
 			}
 
-			// Convertir [-1.0, 1.0] → [-32768, 32767]
+			// Convert [-1.0, 1.0] → [-32768, 32767]
 			val := int32(sample * 32768.0)
 			if val > 32767 {
 				val = 32767
