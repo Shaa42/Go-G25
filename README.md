@@ -49,6 +49,5 @@ Par défaut le client lit `assets/sample-3s.wav`, se connecte à `localhost:4206
 
 ## Points d'amélioration
 - Ajouter des options en ligne de commande pour le client (fichier d'entrée, fichier de sortie)
-- Traitement des chunks par le serveur en parallèle
 - Ajouter des tests
 - Ajouter plus de fonctions pour le traitement audio
