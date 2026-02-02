@@ -34,9 +34,6 @@ func main() {
 	}
 	defer conn.Close()
 
-	// Chunks chan
-	// serverChunks := make(chan audio.WavDataChunk, totalChunks)
-
 	receivedChunks := make([]audio.WavDataChunk, totalChunks)
 	var mut sync.Mutex
 
@@ -61,12 +58,12 @@ func main() {
 
 			// Enregistre dans une liste
 			mut.Lock()
-			if chunk.ChunkID > 0 && chunk.ChunkID <= totalChunks {
+			if chunk.ChunkID >= 1 && chunk.ChunkID <= totalChunks {
 				receivedChunks[chunk.ChunkID-1] = chunk
 			}
 			mut.Unlock()
 		}
-		fmt.Println("done reception")
+		fmt.Println("done receiving")
 	})
 
 	// Iter through data until EOF
@@ -89,6 +86,11 @@ func main() {
 			fmt.Println("EOF")
 			break
 		}
+	}
+
+	// Signaler au serveur qu'on n'envoie plus de données
+	if tcpConn, ok := conn.(*net.TCPConn); ok {
+		tcpConn.CloseWrite()
 	}
 
 	wg.Wait()
